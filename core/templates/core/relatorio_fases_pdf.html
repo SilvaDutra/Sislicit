@@ -1,0 +1,256 @@
+<!-- Arquivo: core/templates/core/relatorio_fases_pdf.html -->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Fases - Sislicit</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
+            line-height: 1.4;
+            color: #333;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #0066CC;
+            padding-bottom: 15px;
+        }
+        
+        .header h1 {
+            color: #0066CC;
+            font-size: 20pt;
+            margin: 0 0 10px 0;
+        }
+        
+        .header p {
+            margin: 5px 0;
+            font-size: 9pt;
+            color: #666;
+        }
+        
+        .info-box {
+            background-color: #f5f5f5;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid #0066CC;
+        }
+        
+        .info-box h2 {
+            color: #0066CC;
+            font-size: 12pt;
+            margin: 0 0 10px 0;
+        }
+        
+        .info-row {
+            margin: 5px 0;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #555;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 9pt;
+        }
+        
+        table thead {
+            background-color: #0066CC;
+            color: white;
+        }
+        
+        table th {
+            padding: 10px 8px;
+            text-align: left;
+            font-weight: bold;
+        }
+        
+        table td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        table tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        table tbody tr:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .status-badge {
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 8pt;
+            font-weight: bold;
+            display: inline-block;
+        }
+        
+        .status-planejamento {
+            background-color: #FFF3CD;
+            color: #856404;
+        }
+        
+        .status-andamento {
+            background-color: #D1ECF1;
+            color: #0C5460;
+        }
+        
+        .status-concluida {
+            background-color: #D4EDDA;
+            color: #155724;
+        }
+        
+        .status-cancelada {
+            background-color: #F8D7DA;
+            color: #721C24;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            font-size: 8pt;
+            color: #666;
+        }
+        
+        .summary {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #E7F3FF;
+            border-radius: 5px;
+        }
+        
+        .summary h3 {
+            color: #0066CC;
+            font-size: 11pt;
+            margin: 0 0 10px 0;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .summary-item {
+            padding: 8px;
+            background-color: white;
+            border-radius: 3px;
+        }
+        
+        .summary-label {
+            font-size: 8pt;
+            color: #666;
+            margin-bottom: 3px;
+        }
+        
+        .summary-value {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #0066CC;
+        }
+    </style>
+</head>
+<body>
+    <!-- Cabeçalho -->
+    <div class="header">
+        <h1>RELATÓRIO DE FASES</h1>
+        <p><strong>Sistema de Licitações - SISLICIT</strong></p>
+        <p>Gerado em: {{ data_geracao|date:"d/m/Y H:i" }}</p>
+    </div>
+
+    <!-- Informações do Filtro -->
+    <div class="info-box">
+        <h2>Informações do Relatório</h2>
+        <div class="info-row">
+            <span class="info-label">Total de Fases:</span> {{ fases|length }}
+        </div>
+        {% if filtro_status %}
+        <div class="info-row">
+            <span class="info-label">Filtro de Status:</span> {{ filtro_status }}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Resumo Estatístico -->
+    <div class="summary">
+        <h3>Resumo por Status</h3>
+        <div class="summary-grid">
+            <div class="summary-item">
+                <div class="summary-label">Planejamento</div>
+                <div class="summary-value">{{ stats.planejamento|default:0 }}</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Em Andamento</div>
+                <div class="summary-value">{{ stats.andamento|default:0 }}</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Concluídas</div>
+                <div class="summary-value">{{ stats.concluida|default:0 }}</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Canceladas</div>
+                <div class="summary-value">{{ stats.cancelada|default:0 }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela de Fases -->
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 8%;">Número</th>
+                <th style="width: 25%;">Objeto</th>
+                <th style="width: 12%;">Modalidade</th>
+                <th style="width: 15%;">Valor Estimado</th>
+                <th style="width: 12%;">Data Abertura</th>
+                <th style="width: 15%;">Responsável</th>
+                <th style="width: 13%;">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fase in fases %}
+            <tr>
+                <td>{{ fase.numero }}</td>
+                <td>{{ fase.objeto|truncatewords:8 }}</td>
+                <td>{{ fase.get_modalidade_display }}</td>
+                <td>R$ {{ fase.valor_estimado|floatformat:2 }}</td>
+                <td>{{ fase.data_abertura|date:"d/m/Y" }}</td>
+                <td>{{ fase.responsavel|default:"Não atribuído" }}</td>
+                <td>
+                    <span class="status-badge status-{{ fase.status }}">
+                        {{ fase.get_status_display }}
+                    </span>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 20px; color: #999;">
+                    Nenhuma fase encontrada com os filtros aplicados.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Rodapé -->
+    <div class="footer">
+        <p><strong>SISLICIT - Sistema de Gestão de Licitações</strong></p>
+        <p>Este documento foi gerado automaticamente pelo sistema.</p>
+        <p>Página 1 de 1</p>
+    </div>
+</body>
+</html>

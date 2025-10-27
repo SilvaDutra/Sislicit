@@ -1,0 +1,145 @@
+{% extends 'core/base.html' %}
+{% load static humanize %}
+
+{% block title %}Gerenciador de Documentos{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Gerenciador de Documentos</h1>
+        <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#gerarDocumentoModal">
+            <i class="bi bi-file-earmark-plus me-2"></i>Gerar Novo Documento
+        </button>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <h6 class="m-0 font-weight-bold text-white"><i class="bi bi-file-earmark-text me-2"></i>Documentos Gerados</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover" id="dataTableDocumentos" width="100%" cellspacing="0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Processo</th>
+                            <th>Tipo de Documento</th>
+                            <th>Data de Geração</th>
+                            <th>Gerado por</th>
+                            <th class="text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for doc in documentos %}
+                        <tr>
+                            <td>{{ doc.processo.numero_processo }}</td>
+                            <td>{{ doc.get_tipo_display }}</td>
+                            <td>{{ doc.data_geracao|naturaltime }} ({{ doc.data_geracao|date:"d/m/Y H:i" }})</td>
+                            <td>{{ doc.gerado_por }}</td>
+                            <td class="text-center">
+                                <a href="{% url 'download_documento' doc.pk %}" class="btn btn-success btn-sm" title="Download do Documento">
+                                    <i class="bi bi-download"></i> Download
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">Nenhum documento gerado ainda.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="gerarDocumentoModal" tabindex="-1" aria-labelledby="gerarDocumentoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="gerarDocumentoModalLabel"><i class="bi bi-file-earmark-plus me-2"></i>Gerar Novo Documento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formGerarDocumento">
+                        <div class="mb-3">
+                            <label for="selectProcesso" class="form-label"><strong>1. Selecione o Processo:</strong></label>
+                            <select class="form-select form-select-lg" id="selectProcesso" name="processo_id">
+                                <option value="" selected disabled>-- Clique para selecionar um processo --</option>
+                                {% for processo in processos %}
+                                    <option value="{{ processo.pk }}">{{ processo.numero_processo }} - {{ processo.objeto|truncatechars:70 }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </form>
+                    <hr>
+                    <p><strong>2. Escolha o documento para gerar:</strong></p>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <a id="btnGerarDFD" href="#" class="btn btn-primary btn-lg disabled" role="button" title="Documento de Formalização da Demanda">
+                        <i class="bi bi-file-text me-1"></i> Gerar DFD
+                    </a>
+                    <a id="btnGerarETP" href="#" class="btn btn-info btn-lg disabled text-dark" role="button" title="Estudo Técnico Preliminar">
+                        <i class="bi bi-file-check me-1"></i> Gerar ETP
+                    </a>
+                    <a id="btnGerarTR" href="#" class="btn btn-warning btn-lg disabled text-dark" role="button" title="Termo de Referência">
+                        <i class="bi bi-file-spreadsheet me-1"></i> Gerar TR
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectProcesso = document.getElementById('selectProcesso');
+    const btnGerarDFD = document.getElementById('btnGerarDFD');
+    const btnGerarETP = document.getElementById('btnGerarETP');
+    const btnGerarTR = document.getElementById('btnGerarTR');
+    
+    // URLs base que pegamos do urls.py (o '0' é um placeholder)
+    // A LÓGICA FOI CORRIGIDA DE .replace('0', '') PARA .replace('0/', '/')
+    const url_base_dfd = "{% url 'gerar_dfd' 0 %}".replace('0/', '');
+    const url_base_etp = "{% url 'gerar_etp' 0 %}".replace('0/', '');
+    const url_base_tr = "{% url 'gerar_tr' 0 %}".replace('0/', '');
+
+    selectProcesso.addEventListener('change', function() {
+        const processoId = this.value;
+        
+        if (processoId) {
+            // Se um processo for selecionado, remove a classe 'disabled'
+            btnGerarDFD.classList.remove('disabled');
+            btnGerarDFD.href = url_base_dfd + processoId + '/';
+            
+            btnGerarETP.classList.remove('disabled');
+            btnGerarETP.href = url_base_etp + processoId + '/';
+            
+            btnGerarTR.classList.remove('disabled');
+            btnGerarTR.href = url_base_tr + processoId + '/';
+        } else {
+            // Se nenhum processo for selecionado, adiciona a classe 'disabled'
+            btnGerarDFD.classList.add('disabled');
+            btnGerarDFD.href = '#';
+            
+            btnGerarETP.classList.add('disabled');
+            btnGerarETP.href = '#';
+            
+            btnGerarTR.classList.add('disabled');
+            btnGerarTR.href = '#';
+        }
+    });
+});
+</script>
+{% endblock %}

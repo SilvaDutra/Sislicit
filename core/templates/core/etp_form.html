@@ -1,0 +1,98 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Estudo Técnico Preliminar (ETP){% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h1 class="h2">Estudo Técnico Preliminar (ETP)</h1>
+            <p class="text-muted mb-0">Processo: {{ processo.numero_processo }}</p>
+        </div>
+        <div class="btn-toolbar">
+            <a href="{% url 'processo_detail' processo.pk %}" class="btn btn-outline-secondary me-2">
+                <i class="bi bi-arrow-left-circle me-1"></i>
+                Voltar
+            </a>
+            <a href="{% url 'gerar_etp' processo.pk %}" class="btn btn-primary" target="_blank">
+                <i class="bi bi-printer me-1"></i>
+                Imprimir (Gerar .docx)
+            </a>
+        </div>
+    </div>
+
+    <div class="alert alert-info small mb-4">
+        <i class="bi bi-info-circle-fill me-2"></i>
+        <strong>Atenção:</strong> Clique em <strong>"Salvar Alterações"</strong> no final da página <em>antes</em> de "Imprimir" para garantir que o documento seja gerado com os dados mais recentes.
+    </div>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body p-4">
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="{{ form.etp_responsavel_elaboracao.id_for_label }}" class="form-label">{{ form.etp_responsavel_elaboracao.label }}</label>
+                        {{ form.etp_responsavel_elaboracao }}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.etp_autoridade_competente.id_for_label }}" class="form-label">{{ form.etp_autoridade_competente.label }}</label>
+                        {{ form.etp_autoridade_competente }}
+                    </div>
+
+                    <div class="col-12">
+                        <label for="{{ form.justificativa.id_for_label }}" class="form-label">{{ form.justificativa.label }}</label>
+                        {{ form.justificativa }}
+                    </div>
+                    
+                    <div class="col-12">
+                        <label for="{{ form.etp_pca_texto.id_for_label }}" class="form-label">{{ form.etp_pca_texto.label }}</label>
+                        {{ form.etp_pca_texto }}
+                    </div>
+
+                    <div class="col-12">
+                        <label for="{{ form.etp_texto_estimativa_quantidades.id_for_label }}" class="form-label">{{ form.etp_texto_estimativa_quantidades.label }}</label>
+                        {{ form.etp_texto_estimativa_quantidades }}
+                    </div>
+                    
+                    <div class="col-12">
+                        <label for="{{ form.etp_texto_levantamento_mercado.id_for_label }}" class="form-label">{{ form.etp_texto_levantamento_mercado.label }}</label>
+                        {{ form.etp_texto_levantamento_mercado }}
+                    </div>
+
+                    <h5 class="mt-5">Demais Campos</h5>
+                    <hr>
+                    
+                    {% for field in form %}
+                        {% if field.name not in "etp_responsavel_elaboracao,etp_autoridade_competente,justificativa,etp_pca_texto,etp_texto_estimativa_quantidades,etp_texto_levantamento_mercado" %}
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ field.errors.as_text }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+
+                </div>
+
+            </div>
+        </div>
+
+        <div class="text-end mb-5">
+            <button type="submit" class="btn btn-success btn-lg shadow-sm">
+                <i class="bi bi-check-circle me-2"></i>
+                Salvar Alterações
+            </button>
+        </div>
+
+    </form>
+</div>
+{% endblock %}

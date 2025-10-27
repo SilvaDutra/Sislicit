@@ -1,0 +1,57 @@
+{% extends 'core/base.html' %}
+{% block title %}Relatório de Processos - Syslicit{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Relatório de Processos</h1>
+</div>
+<div class="card shadow-sm mb-4">
+    <div class="card-header"><h5 class="mb-0"><i class="bi bi-funnel-fill me-2"></i>Filtros de Pesquisa</h5></div>
+    <div class="card-body">
+        <form method="get" action="">
+            <div class="row g-3">
+                <div class="col-md-6 col-lg-3"><label for="orgao" class="form-label">Órgão</label><select id="orgao" name="orgao" class="form-select"><option value="">Todos</option>{% for orgao in orgaos %}<option value="{{ orgao.pk }}" {% if filtros_aplicados.orgao == orgao.pk|stringformat:"s" %}selected{% endif %}>{{ orgao.nome }}</option>{% endfor %}</select></div>
+                <div class="col-md-6 col-lg-3"><label for="secretaria" class="form-label">Secretaria</label><select id="secretaria" name="secretaria" class="form-select"><option value="">Todas</option>{% for sec in secretarias %}<option value="{{ sec.pk }}" {% if filtros_aplicados.secretaria == sec.pk|stringformat:"s" %}selected{% endif %}>{{ sec.nome }}</option>{% endfor %}</select></div>
+                <div class="col-md-6 col-lg-3"><label for="modalidade" class="form-label">Modalidade</label><select id="modalidade" name="modalidade" class="form-select"><option value="">Todas</option>{% for key, name in modalidades %}<option value="{{ key }}" {% if filtros_aplicados.modalidade == key %}selected{% endif %}>{{ name }}</option>{% endfor %}</select></div>
+                <div class="col-md-6 col-lg-3"><label for="status" class="form-label">Status</label><select id="status" name="status" class="form-select"><option value="">Todos</option>{% for key, name in status_list %}<option value="{{ key }}" {% if filtros_aplicados.status == key %}selected{% endif %}>{{ name }}</option>{% endfor %}</select></div>
+                <div class="col-md-6 col-lg-3"><label for="data_inicio" class="form-label">Data Abertura (Início)</label><input type="date" id="data_inicio" name="data_inicio" class="form-control" value="{{ filtros_aplicados.data_inicio }}"></div>
+                <div class="col-md-6 col-lg-3"><label for="data_fim" class="form-label">Data Abertura (Fim)</label><input type="date" id="data_fim" name="data_fim" class="form-control" value="{{ filtros_aplicados.data_fim }}"></div>
+            </div>
+            <hr>
+            <div class="d-flex justify-content-end">
+                <a href="{% url 'relatorio_processos' %}" class="btn btn-outline-secondary me-2">Limpar</a>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-search me-2"></i>Filtrar</button>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="card shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-table me-2"></i>Resultados <span class="badge bg-secondary">{{ resultados|length }}</span></h5>
+        <div>
+            <a href="{% url 'exportar_processos_pdf' %}?{{ request.GET.urlencode }}" class="btn btn-sm btn-outline-danger"><i class="bi bi-file-earmark-pdf me-1"></i>Exportar PDF</a>
+            <a href="{% url 'exportar_processos_csv' %}?{{ request.GET.urlencode }}" class="btn btn-sm btn-outline-success"><i class="bi bi-file-earmark-excel me-1"></i>Exportar Excel</a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead><tr><th>Nº Processo</th><th>Órgão</th><th>Secretaria</th><th>Modalidade</th><th class="text-center">Status</th><th>Data Abertura</th></tr></thead>
+                <tbody>
+                    {% for processo in resultados %}
+                    <tr>
+                        <td><a href="{% url 'processo_detail' processo.pk %}">{{ processo.numero_processo }}</a></td>
+                        <td>{{ processo.orgao_responsavel.nome }}</td>
+                        <td>{{ processo.secretaria_responsavel.nome|default:"-" }}</td>
+                        <td>{{ processo.get_modalidade_display }}</td>
+                        <td class="text-center"><span class="badge bg-primary">{{ processo.get_status_display }}</span></td>
+                        <td>{{ processo.data_abertura|date:"d/m/Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted py-4">{% if request.GET %}Nenhum resultado encontrado.{% else %}Use os filtros acima para pesquisar.{% endif %}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,601 @@
+<!-- Arquivo: core/templates/core/dashboard.html -->
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Sislicit{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+    body {
+        font-family: 'Roboto', sans-serif !important;
+    }
+    
+    .dashboard-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+    }
+    
+    .dashboard-header h1 {
+        font-weight: 900;
+        font-size: 36px;
+        margin: 0;
+    }
+    
+    .dashboard-header p {
+        margin: 5px 0 0 0;
+        opacity: 0.9;
+        font-weight: 300;
+    }
+    
+    .stat-card {
+        border: none !important;
+        border-radius: 20px !important;
+        transition: all 0.3s ease;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .stat-card.card-1::before {
+        background: linear-gradient(90deg, #667eea, #764ba2);
+    }
+    
+    .stat-card.card-2::before {
+        background: linear-gradient(90deg, #f093fb, #f5576c);
+    }
+    
+    .stat-card.card-3::before {
+        background: linear-gradient(90deg, #43e97b, #38f9d7);
+    }
+    
+    .stat-card.card-4::before {
+        background: linear-gradient(90deg, #4facfe, #00f2fe);
+    }
+    
+    .stat-card .card-body {
+        padding: 25px;
+    }
+    
+    .stat-card .card-title {
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #999;
+        margin-bottom: 15px;
+    }
+    
+    .stat-card .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        color: white;
+    }
+    
+    .stat-card.card-1 .stat-icon {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+    }
+    
+    .stat-card.card-2 .stat-icon {
+        background: linear-gradient(135deg, #f093fb, #f5576c);
+    }
+    
+    .stat-card.card-3 .stat-icon {
+        background: linear-gradient(135deg, #43e97b, #38f9d7);
+    }
+    
+    .stat-card.card-4 .stat-icon {
+        background: linear-gradient(135deg, #4facfe, #00f2fe);
+    }
+    
+    .stat-card .stat-number {
+        font-size: 42px;
+        font-weight: 900;
+        color: #333;
+        line-height: 1;
+    }
+    
+    .chart-card {
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    
+    .chart-card:hover {
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+    }
+    
+    .chart-card .card-header {
+        background: white;
+        border: none;
+        padding: 25px 25px 15px 25px;
+        font-weight: 700;
+        font-size: 18px;
+        color: #333;
+        border-radius: 20px 20px 0 0;
+    }
+    
+    .chart-card .card-body {
+        padding: 25px;
+    }
+    
+    .activity-item {
+        border: none !important;
+        border-radius: 12px !important;
+        margin-bottom: 10px;
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent !important;
+    }
+    
+    .activity-item:hover {
+        background: linear-gradient(90deg, #f8f9ff 0%, #ffffff 100%) !important;
+        border-left-color: #667eea !important;
+        transform: translateX(5px);
+    }
+    
+    .activity-item h6 {
+        font-weight: 700;
+        font-size: 14px;
+    }
+    
+    .activity-item .small {
+        font-size: 12px;
+    }
+    
+    .mini-chart-container {
+        height: 300px;
+        position: relative;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .stat-card {
+        animation: fadeInUp 0.5s ease;
+    }
+    
+    .stat-card:nth-child(1) {
+        animation-delay: 0.1s;
+    }
+    
+    .stat-card:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+    
+    .stat-card:nth-child(3) {
+        animation-delay: 0.3s;
+    }
+    
+    .stat-card:nth-child(4) {
+        animation-delay: 0.4s;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <h1><i class="bi bi-speedometer2"></i> Dashboard</h1>
+        <p>Bem-vindo ao Sistema de Gestão de Licitações</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="card stat-card card-1 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Total de Processos</h5>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="stat-number">{{ total_processos|default:0 }}</div>
+                        <div class="stat-icon">
+                            <i class="bi bi-folder2-open"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card stat-card card-2 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Processos Ativos</h5>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="stat-number">{{ processos_ativos|default:0 }}</div>
+                        <div class="stat-icon">
+                            <i class="bi bi-hourglass-split"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card stat-card card-3 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Homologados</h5>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="stat-number">{{ homologados|default:0 }}</div>
+                        <div class="stat-icon">
+                            <i class="bi bi-check2-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card stat-card card-4 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Fornecedores</h5>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="stat-number">{{ total_fornecedores|default:0 }}</div>
+                        <div class="stat-icon">
+                            <i class="bi bi-people"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 1 -->
+    <div class="row g-4 mb-4">
+        <!-- Status Chart - Horizontal Bar -->
+        <div class="col-lg-6">
+            <div class="card chart-card">
+                <div class="card-header">
+                    <i class="bi bi-bar-chart-fill text-primary"></i> Status dos Processos
+                </div>
+                <div class="card-body">
+                    <div class="mini-chart-container">
+                        <canvas id="statusBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modalidade Chart - Pie -->
+        <div class="col-lg-6">
+            <div class="card chart-card">
+                <div class="card-header">
+                    <i class="bi bi-pie-chart-fill text-primary"></i> Processos por Modalidade
+                </div>
+                <div class="card-body">
+                    <div class="mini-chart-container">
+                        <canvas id="modalidadeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div class="row g-4 mb-4">
+        <!-- Timeline Chart -->
+        <div class="col-lg-8">
+            <div class="card chart-card">
+                <div class="card-header">
+                    <i class="bi bi-graph-up text-primary"></i> Processos ao Longo do Tempo
+                </div>
+                <div class="card-body">
+                    <div class="mini-chart-container">
+                        <canvas id="timelineChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Orgaos -->
+        <div class="col-lg-4">
+            <div class="card chart-card">
+                <div class="card-header">
+                    <i class="bi bi-building text-primary"></i> Top 5 Órgãos
+                </div>
+                <div class="card-body">
+                    <div class="mini-chart-container">
+                        <canvas id="orgaosChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activities -->
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="card chart-card">
+                <div class="card-header">
+                    <i class="bi bi-clock-history text-primary"></i> Atividades Recentes
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for historico in atividades_recentes %}
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <a href="{% url 'processo_detail' historico.processo.pk %}" class="text-decoration-none">
+                                <div class="activity-item p-3">
+                                    <div class="d-flex align-items-start">
+                                        <div class="me-3">
+                                            <div class="stat-icon" style="width: 45px; height: 45px; font-size: 20px; background: linear-gradient(135deg, #667eea, #764ba2);">
+                                                <i class="bi bi-arrow-right-circle-fill"></i>
+                                            </div>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1 text-primary">{{ historico.get_etapa_display }}</h6>
+                                            <p class="mb-1 small"><strong>Processo:</strong> {{ historico.processo.numero_processo }}</p>
+                                            <small class="text-muted">
+                                                <i class="bi bi-building"></i> {{ historico.processo.orgao_responsavel.nome|truncatewords:3 }}
+                                            </small>
+                                            <br>
+                                            <small class="text-muted">
+                                                <i class="bi bi-clock"></i> {{ historico.data_conclusao|timesince }} atrás
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        {% empty %}
+                        <div class="col-12">
+                            <div class="text-center py-5">
+                                <i class="bi bi-inbox" style="font-size: 48px; color: #ddd;"></i>
+                                <p class="text-muted mt-3">Nenhuma atividade recente para exibir.</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    {{ chart_labels|json_script:"chart-labels-data" }}
+    {{ chart_data|json_script:"chart-data-data" }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const chartLabels = JSON.parse(document.getElementById('chart-labels-data').textContent);
+            const chartData = JSON.parse(document.getElementById('chart-data-data').textContent);
+            
+            // Configurações globais do Chart.js
+            Chart.defaults.font.family = 'Roboto';
+            Chart.defaults.color = '#666';
+            
+            // Cores modernas
+            const colors = {
+                purple: 'rgba(102, 126, 234, 0.8)',
+                pink: 'rgba(240, 147, 251, 0.8)',
+                green: 'rgba(67, 233, 123, 0.8)',
+                blue: 'rgba(79, 172, 254, 0.8)',
+                orange: 'rgba(250, 112, 154, 0.8)',
+                yellow: 'rgba(254, 225, 64, 0.8)'
+            };
+            
+            // 1. Status Bar Chart (Horizontal)
+            if (document.getElementById('statusBarChart') && chartData && chartData.length > 0) {
+                new Chart(document.getElementById('statusBarChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: chartLabels,
+                        datasets: [{
+                            label: 'Quantidade',
+                            data: chartData,
+                            backgroundColor: [
+                                colors.purple,
+                                colors.pink,
+                                colors.green,
+                                colors.blue,
+                                colors.orange,
+                                colors.yellow
+                            ],
+                            borderRadius: 10,
+                            borderSkipped: false,
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                padding: 12,
+                                cornerRadius: 8
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                grid: {
+                                    display: false
+                                }
+                            },
+                            y: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // 2. Modalidade Pie Chart
+            if (document.getElementById('modalidadeChart') && chartData && chartData.length > 0) {
+                new Chart(document.getElementById('modalidadeChart'), {
+                    type: 'pie',
+                    data: {
+                        labels: chartLabels,
+                        datasets: [{
+                            data: chartData,
+                            backgroundColor: [
+                                colors.purple,
+                                colors.pink,
+                                colors.green,
+                                colors.blue,
+                                colors.orange,
+                                colors.yellow
+                            ],
+                            borderWidth: 3,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 15,
+                                    font: {
+                                        size: 12,
+                                        weight: '500'
+                                    },
+                                    usePointStyle: true,
+                                    pointStyle: 'circle'
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                padding: 12,
+                                cornerRadius: 8
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // 3. Timeline Chart (Line)
+            if (document.getElementById('timelineChart')) {
+                new Chart(document.getElementById('timelineChart'), {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+                        datasets: [{
+                            label: 'Processos Criados',
+                            data: [12, 19, 15, 25, 22, 30, 28, 35, 32, 40, 38, 45],
+                            borderColor: colors.purple,
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            tension: 0.4,
+                            fill: true,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            pointBackgroundColor: colors.purple,
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                padding: 12,
+                                cornerRadius: 8
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // 4. Top Orgaos Chart (Doughnut)
+            if (document.getElementById('orgaosChart')) {
+                new Chart(document.getElementById('orgaosChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Órgão A', 'Órgão B', 'Órgão C', 'Órgão D', 'Órgão E'],
+                        datasets: [{
+                            data: [30, 25, 20, 15, 10],
+                            backgroundColor: [
+                                colors.purple,
+                                colors.pink,
+                                colors.green,
+                                colors.blue,
+                                colors.orange
+                            ],
+                            borderWidth: 3,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 10,
+                                    font: {
+                                        size: 11,
+                                        weight: '500'
+                                    },
+                                    usePointStyle: true,
+                                    pointStyle: 'circle'
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                padding: 12,
+                                cornerRadius: 8
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+{% endblock %}

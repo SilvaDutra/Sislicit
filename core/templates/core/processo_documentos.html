@@ -1,0 +1,59 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Gerenciar Documentos - Syslicit{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <div>
+        <h1 class="h2">Central de Documentos</h1>
+        <p class="text-muted">Processo: {{ processo.numero_processo }}</p>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'processo_detail' processo.pk %}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-left-circle me-1"></i>
+            Voltar aos Detalhes
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header">
+        <h5 class="mb-0">Imprimir / Gerar Documentos da Fase Interna</h5>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-warning small" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <strong>Atenção:</strong> Os documentos gerados são modelos e devem ser revisados por um responsável antes de sua publicação ou uso oficial.
+        </div>
+
+        <p class="mt-4">Selecione o documento que deseja gerar. O sistema usará as informações preenchidas para criar o arquivo .docx.</p>
+
+        <div class="list-group">
+            <a href="{% url 'gerar_dfd' processo.pk %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-1">Documento de Formalização da Demanda (DFD)</h6>
+                    <small class="text-muted">Gera o documento inicial que formaliza a necessidade da contratação.</small>
+                </div>
+                <i class="bi bi-file-earmark-arrow-down fs-4 text-primary"></i>
+            </a>
+            
+            <a href="{% url 'gerar_etp' processo.pk %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-1">Estudo Técnico Preliminar (ETP)</h6>
+                    <small class="text-muted">Gera o estudo completo com a análise de viabilidade, custos e soluções.</small>
+                </div>
+                <i class="bi bi-file-earmark-arrow-down fs-4 text-primary"></i>
+            </a>
+            
+            <a href="{% url 'gerar_tr' processo.pk %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-1">Termo de Referência (TR)</h6>
+                    <small class="text-muted">Gera o documento com as especificações técnicas e obrigações.</small>
+                </div>
+                <i class="bi bi-file-earmark-arrow-down fs-4 text-primary"></i>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

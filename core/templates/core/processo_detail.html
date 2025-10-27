@@ -1,0 +1,141 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Detalhes do Processo - Syslicit{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <div>
+        <h1 class="h2">Processo: {{ processo.numero_processo }}</h1>
+        <p class="text-muted">{{ processo.get_modalidade_display }} - <span class="badge bg-primary">{{ processo.get_status_display }}</span></p>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'processo_list' %}" class="btn btn-sm btn-outline-secondary me-2"><i class="bi bi-arrow-left-circle me-1"></i>Voltar à Lista</a>
+        <a href="{% url 'exportar_andamento_pdf' processo.pk %}" class="btn btn-sm btn-outline-info me-2"><i class="bi bi-printer me-1"></i>Imprimir Andamento</a>
+        <a href="{% url 'processo_update' processo.pk %}" class="btn btn-sm btn-secondary"><i class="bi bi-pencil-square me-1"></i>Editar Dados Gerais</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header"><h5 class="mb-0">Ciclo de Vida do Processo</h5></div>
+            <div class="card-body">
+                <h6>Fase Interna</h6>
+                <div class="list-group list-group-flush mb-3">
+                    {% for etapa in fase_interna_etapas %}
+                    <label class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <input class="form-check-input me-2 etapa-checkbox" type="checkbox" value="{{ etapa.key }}" data-processo-id="{{ processo.pk }}"
+                            {% if etapa.date %}checked disabled{% endif %}>
+                            {{ etapa.name }}
+                        </div>
+                        {% if etapa.date %}
+                            <small class="text-muted">{{ etapa.date|date:"d/m/Y H:i" }}</small>
+                        {% endif %}
+                    </label>
+                    {% endfor %}
+                </div>
+
+                <h6>Fase Externa até Homologação</h6>
+                <div class="list-group list-group-flush">
+                    {% for etapa in fase_externa_etapas %}
+                    <label class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <input class="form-check-input me-2 etapa-checkbox" type="checkbox" value="{{ etapa.key }}" data-processo-id="{{ processo.pk }}"
+                            {% if etapa.date %}checked disabled{% endif %}>
+                            {{ etapa.name }}
+                        </div>
+                        {% if etapa.date %}
+                            <small class="text-muted">{{ etapa.date|date:"d/m/Y H:i" }}</small>
+                        {% endif %}
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-header"><h5 class="mb-0">Ações do Processo</h5></div>
+            <div class="card-body">
+                <h6>1. Preencher Dados</h6>
+                <p class="small text-muted">Acesse os formulários para preencher as informações detalhadas de cada documento.</p>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'processo_etp_form' processo.pk %}" class="btn btn-outline-success"><i class="bi bi-input-cursor-text me-2"></i>Preencher/Editar ETP</a>
+                </div>
+                <hr>
+                <h6>2. Gerar / Imprimir</h6>
+                <p class="small text-muted">Acesse a central de documentos para gerar os arquivos .docx.</p>
+                <div class="d-grid">
+                    <a href="{% url 'processo_documentos' processo.pk %}" class="btn btn-primary"><i class="bi bi-files me-2"></i>Gerenciar Documentos</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    const checkboxes = document.querySelectorAll('.etapa-checkbox');
+    checkboxes.forEach(function(checkbox) {
+        checkbox.addEventListener('change', function() {
+            if (this.checked) {
+                const processoId = this.dataset.processoId;
+                const etapaKey = this.value;
+                this.disabled = true;
+
+                fetch("{% url 'salvar_etapa_historico' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({
+                        processo_id: processoId,
+                        etapa: etapaKey
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) { throw new Error('Falha na resposta do servidor'); }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        console.log('Etapa salva:', etapaKey);
+                        window.location.reload(); 
+                    } else {
+                        console.error('Erro ao salvar etapa:', data.error);
+                        alert('Ocorreu um erro ao salvar a etapa: ' + data.error);
+                        this.disabled = false; this.checked = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro de conexão:', error);
+                    alert('Erro de conexão ao tentar salvar a etapa.');
+                    this.disabled = false; this.checked = false;
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

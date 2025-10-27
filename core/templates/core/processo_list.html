@@ -1,0 +1,62 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Lista de Processos - Syslicit{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Processos Licitatórios</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'processo_create' %}" class="btn btn-sm btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>
+            Novo Processo
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">Nº Processo</th>
+                        <th scope="col">Órgão</th>
+                        <th scope="col">Secretaria</th>
+                        <th scope="col">Modalidade</th>
+                        <th scope="col" class="text-center">Status</th>
+                        <th scope="col" class="text-center">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for processo in processos %}
+                    <tr>
+                        <td><a href="{% url 'processo_detail' processo.pk %}">{{ processo.numero_processo }}</a></td>
+                        <td>{{ processo.orgao_responsavel.nome }}</td>
+                        <td>{{ processo.secretaria_responsavel.nome|default:"-" }}</td>
+                        <td>{{ processo.get_modalidade_display }}</td>
+                        <td class="text-center">
+                            <span class="badge 
+                                {% if processo.status == 'HOMOLOGADO' %} bg-success
+                                {% elif processo.status == 'CANCELADO' %} bg-danger
+                                {% elif processo.status == 'FASE_INTERNA' %} bg-secondary
+                                {% else %} bg-warning text-dark
+                                {% endif %}">
+                                {{ processo.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <a href="{% url 'processo_update' processo.pk %}" class="btn btn-sm btn-outline-secondary" title="Editar"><i class="bi bi-pencil-square"></i></a>
+                            <a href="{% url 'processo_delete' processo.pk %}" class="btn btn-sm btn-outline-danger" title="Excluir"><i class="bi bi-trash"></i></a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">Nenhum processo cadastrado ainda.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
